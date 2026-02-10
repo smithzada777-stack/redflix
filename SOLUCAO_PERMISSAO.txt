@@ -1,0 +1,28 @@
+⚠️ IMPORTANTE: SOLUÇÃO DO ERRO DE PERMISSÃO ⚠️
+
+O erro "Missing or insufficient permissions" acontece porque o seu Firebase está bloqueando o site de ler os dados de "leads" ou "payments".
+
+Para corrigir isso e fazer a aprovação funcionar (tanto o Webhook quanto o site), você precisa liberar o acesso no painel do Firebase.
+
+PASSO A PASSO:
+
+1. Acesse o Console do Firebase: https://console.firebase.google.com/
+2. Selecione o projeto: redflix-11f4d (ou o nome que você criou)
+3. No menu lateral, clique em "Criação" > "Firestore Database"
+4. Clique na aba "Regras" (Rules)
+5. Apague TUDO o que estiver lá e cole este código abaixo (Modo de Teste Total):
+
+-----------------------------------------------------------
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+-----------------------------------------------------------
+
+6. Clique em "Publicar" (Publish).
+
+Após fazer isso, o erro vermelho no console vai sumir e o pagamento será aprovado automaticamente.

@@ -1,0 +1,28 @@
+'use client';
+
+// 🔒 ARQUIVO BLOQUEADO - SENHA PARA EDIÇÃO: 123 🔒
+// ESTE ARQUIVO NÃO DEVE SER ALTERADO SEM AUTORIZAÇÃO EXPLÍCITA E A SENHA.
+
+import Image from 'next/image';
+import Link from 'next/link';
+
+export default function Navbar() {
+    return (
+        <nav className="absolute top-0 left-0 w-full z-50 bg-transparent p-4 md:p-6">
+            <div className="container mx-auto px-4 md:px-12 flex justify-center md:justify-start">
+                <Link href="/">
+                    <div className="relative w-36 h-10 md:w-44 md:h-12 hover:opacity-80 transition-opacity border-none outline-none ring-0">
+                        <Image
+                            src="/images/brand/logo.png"
+                            alt="RedFlix Logo"
+                            fill
+                            className="object-contain object-center md:object-left"
+                            priority
+                            sizes="176px"
+                        />
+                    </div>
+                </Link>
+            </div>
+        </nav>
+    );
+}
