@@ -1,39 +1,65 @@
 import * as admin from 'firebase-admin';
 
-if (!admin.apps.length) {
+// Função para tentar inicializar o Admin SDK
+function initializeAdmin() {
+    if (admin.apps.length > 0) return admin.app();
+
     try {
-        if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-            let rawServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT.trim();
-            // Remove leading/trailing quotes if they exist
-            if ((rawServiceAccount.startsWith("'") && rawServiceAccount.endsWith("'")) ||
-                (rawServiceAccount.startsWith('"') && rawServiceAccount.endsWith('"'))) {
-                rawServiceAccount = rawServiceAccount.slice(1, -1);
+        const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT;
+
+        if (!serviceAccount) {
+            console.warn('[FIREBASE ADMIN] Variável FIREBASE_SERVICE_ACCOUNT não encontrada ou vazia.');
+            return null;
+        }
+
+        // TENTATIVA 1: Parse Direto (Ideal para JSON colado corretamente)
+        try {
+            // Tenta limpar apenas espaços em branco nas pontas
+            const rawParams = JSON.parse(serviceAccount.trim());
+            console.log('[FIREBASE ADMIN] Credenciais carregadas via parse direto.');
+            return admin.initializeApp({
+                credential: admin.credential.cert(rawParams)
+            });
+        } catch (e1) {
+            console.log('[FIREBASE ADMIN] Falha no parse direto. Tentando limpeza de formatação avançada...');
+        }
+
+        // TENTATIVA 2: Limpeza de aspas extras e formatação do Netlify
+        // Netlify às vezes escapa os \n literals no painel
+        try {
+            let cleanCreds = serviceAccount.toString().trim();
+
+            // Se o JSON estiver envelopado em aspas simples ou duplas, remove
+            if ((cleanCreds.startsWith('"') && cleanCreds.endsWith('"')) ||
+                (cleanCreds.startsWith("'") && cleanCreds.endsWith("'"))) {
+                cleanCreds = cleanCreds.slice(1, -1);
             }
-            const serviceAccount = JSON.parse(rawServiceAccount);
-            // Verify if key properties exist to avoid crash
-            if (serviceAccount.project_id && serviceAccount.client_email && serviceAccount.private_key) {
-                admin.initializeApp({
-                    credential: admin.credential.cert(serviceAccount)
-                });
-                console.log('[FIREBASE ADMIN] Inicializado com Service Account');
-            } else {
-                console.warn('[FIREBASE ADMIN] Service Account incompleta. Usando credenciais padrão ou ignorando...');
-                // Fallback: try initializeApp without cert (might work if gcloud auth is present, or just fail gracefully)
-                admin.initializeApp();
+
+            // Tenta lidar com quebras de linha escapadas
+            // Se o JSON tiver literalmente os caracteres \ e n, isso pode ser necessário
+            // Mas só aplicamos se o parse falhou antes.
+            if (cleanCreds.includes('\\n')) {
+                cleanCreds = cleanCreds.replace(/\\n/g, '\n');
             }
-        } else {
-            admin.initializeApp();
+
+            const credentials = JSON.parse(cleanCreds);
+            console.log('[FIREBASE ADMIN] Credenciais carregadas após limpeza.');
+
+            return admin.initializeApp({
+                credential: admin.credential.cert(credentials)
+            });
+
+        } catch (error: any) {
+            console.error('[FIREBASE ADMIN] ERRO FATAL: Não foi possível ler as credenciais. Verifique o JSON no Netlify.', error.message);
+            return null;
         }
     } catch (error) {
-        console.error('[FIREBASE ADMIN] Erro fatal na inicialização:', error);
-        // IF WE cannot initialize, we might want to re-throw or handle it. 
-        // For build time, it's better to not crash on imports if possible.
-        // But if the app logic depends on it, it will struggle.
-        // Let's try to initialize empty app as last resort to pass build static generation?
-        // No, that might confuse things. Let's just catch.
+        console.error('[FIREBASE ADMIN] Erro fatal na inicialização geral:', error);
+        return null;
     }
 }
 
-// Export a getter or a proxy to avoid immediate access issues if init failed?
-// No, standard way is:
-export const adminDb = admin.apps.length ? admin.firestore() : {} as any; 
+const app = initializeAdmin();
+
+// Exporta o Firestore apenas se o app inicializou.
+export const adminDb = app ? app.firestore() : null as any;

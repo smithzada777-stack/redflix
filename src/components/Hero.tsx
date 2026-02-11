@@ -16,7 +16,7 @@ const Hero = () => {
                 <div className="absolute left-[20%] top-1/2 -translate-y-1/2 w-[50%] h-[70%] bg-primary/25 blur-[100px] rounded-full"></div>
                 <div className="relative w-[70%] h-full">
                     <Image
-                        src="/images/hero/hero-bg.png"
+                        src="https://i.imgur.com/wGZdjw3.png"
                         alt="RedFlix Background"
                         fill
                         className="object-cover object-left"
@@ -59,7 +59,7 @@ const Hero = () => {
 
                         <div className="relative w-full h-full" style={{ maskImage: 'linear-gradient(to bottom, transparent 0%, black 50%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 50%)' }}>
                             <Image
-                                src="/images/hero/hero-bg.png"
+                                src="https://i.imgur.com/wGZdjw3.png"
                                 alt="RedFlix Mobile"
                                 fill
                                 className="object-contain scale-110"

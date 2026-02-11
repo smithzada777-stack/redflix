@@ -150,7 +150,7 @@ export default function Checkout({ isOpen, onClose, plan }: CheckoutProps) {
                                             Oferta de Lançamento
                                         </div>
                                         <div className="relative w-40 h-16 mb-2">
-                                            <Image src="/images/brand/logo.png" alt="RedFlix" fill className="object-contain" unoptimized />
+                                            <Image src="https://i.imgur.com/6H5gxcw.png" alt="RedFlix" fill className="object-contain" unoptimized />
                                         </div>
                                         <p className="text-gray-400 text-sm mt-2 font-medium">
                                             Você está adquirindo: <span className="text-white font-bold">{plan.period} de acesso TOTAL</span>.

@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
-import querystring from 'querystring';
 import { sendEmail } from '@/lib/email';
+import querystring from 'querystring';
 
 export async function POST(req: Request) {
     try {
-        const contentType = req.headers.get('content-type') || '';
         const bodyText = await req.text();
-
+        const contentType = req.headers.get('content-type') || '';
         let data: any;
 
-        // Parse body based on content type (JSON or Form UrlEncoded)
+        // Parse inteligente para suportar múltiplos formatos (JSON ou Form UrlEncoded)
         if (contentType.includes('application/json')) {
             try {
                 data = JSON.parse(bodyText);
@@ -22,97 +21,56 @@ export async function POST(req: Request) {
         }
 
         console.log('--- [WEBHOOK PUSHINPAY] RECEBIDO ---');
-        // console.log('Payload:', JSON.stringify(data, null, 2)); // Optional: log full payload for debug
 
-        // MANUAL PASSO 3: O ID e Status devem ser tratados com rigor
         const transactionId = (data.id || data.transaction_id || data.reference || data.external_id || data.reference_id)?.toString().toLowerCase();
         const status = (data.status || data.transaction_status || '').toString().toLowerCase();
         const payerEmail = data.payer_email || data.email || data.payer?.email;
 
         if (!transactionId) {
             console.error('[WEBHOOK] Sem ID de transação no payload.');
-            return NextResponse.json({ error: 'ID not found' }, { status: 400 });
+            return NextResponse.json({ error: 'ID not found' }, { status: 200 });
         }
 
-        console.log(`[WEBHOOK] ID: ${transactionId} | Status: ${status} `);
+        console.log(`[WEBHOOK] ID: ${transactionId} | Status: ${status}`);
 
-        // MANUAL PASSO 3: GRAVA NO DISCO (FIREBASE) USANDO O ADMIN SDK
-        // 1. Update "payments" collection (The "Blindado" Webhook)
+        // 1. Atualiza a coleção de pagamentos
         try {
-            await adminDb.collection('payments').doc(transactionId).set({
-                status: status,
-                updated_at: new Date().toISOString(),
-                webhook_payload: data
-            }, { merge: true });
-            console.log(`[WEBHOOK] Pagamento ${transactionId} atualizado para status: ${status} `);
+            if (adminDb) {
+                await adminDb.collection('payments').doc(transactionId).set({
+                    status: status,
+                    updated_at: new Date().toISOString(),
+                    webhook_payload: data
+                }, { merge: true });
+            }
         } catch (dbError) {
             console.error('[WEBHOOK] Erro ao atualizar payments:', dbError);
-            throw dbError; // Critical error
         }
 
-        // 2. If positive status, update "leads" collection
+        // 2. Se o status for positivo, atualiza o Lead e envia o e-mail de acesso
         const positiveStatuses = ['paid', 'approved', 'confirmed', 'concluido', 'sucesso'];
         if (positiveStatuses.includes(status)) {
-            console.log(`[WEBHOOK] Pagamento confirmado.Atualizando leads...`);
+            console.log(`[WEBHOOK] Pagamento confirmado para ID: ${transactionId}. Iniciando liberação...`);
 
-            let leadUpdated = false;
+            if (adminDb) {
+                const leadsRef = adminDb.collection('leads');
+                const snapshot = await leadsRef.where('transactionId', '==', transactionId).get();
 
-            // Search manually since Admin SDK query syntax is slightly different but logic is same
-            // Strategy 1: Find by transactionId
-            const leadsRef = adminDb.collection('leads');
-            const snapshotById = await leadsRef
-                .where('transactionId', '==', transactionId)
-                .limit(5)
-                .get();
-
-            if (!snapshotById.empty) {
-                const batch = adminDb.batch();
-                for (const doc of snapshotById.docs) {
-                    const leadData = doc.data();
-                    batch.update(doc.ref, {
-                        status: 'approved',
-                        paidAt: new Date().toISOString()
-                    });
-                    console.log(`[WEBHOOK] Lead ${doc.id} encontrado por ID.`);
-
-                    // ENVIAR E-MAIL DE PAGAMENTO APROVADO
-                    if (leadData.email) {
-                        try {
-                            await sendEmail({
-                                email: leadData.email,
-                                plan: leadData.plan || 'Plano RedFlix',
-                                price: leadData.price || '0,00',
-                                status: 'approved'
-                            });
-                            console.log(`[WEBHOOK] E - mail de aprovação enviado para: ${leadData.email} `);
-                        } catch (emailErr: any) {
-                            console.error(`[WEBHOOK] Erro ao enviar e - mail: ${emailErr.message} `);
-                        }
-                    }
-                }
-                await batch.commit();
-                leadUpdated = true;
-            }
-
-            // Strategy 2: Find by Email (Fallback)
-            if (!leadUpdated && payerEmail) {
-                console.log(`[WEBHOOK] Buscando lead por email: ${payerEmail} `);
-                const snapshotByEmail = await leadsRef
-                    .where('email', '==', payerEmail)
-                    .limit(5)
-                    .get();
-
-                if (!snapshotByEmail.empty) {
-                    const batch = adminDb.batch();
-                    for (const doc of snapshotByEmail.docs) {
+                if (!snapshot.empty) {
+                    for (const doc of snapshot.docs) {
                         const leadData = doc.data();
-                        batch.update(doc.ref, {
-                            status: 'approved',
-                            paidAt: new Date().toISOString()
-                        });
-                        console.log(`[WEBHOOK] Lead ${doc.id} encontrado por Email.`);
 
-                        // ENVIAR E-MAIL DE PAGAMENTO APROVADO
+                        try {
+                            // Primeiro garante a atualização no Banco (Dashboard)
+                            await doc.ref.update({
+                                status: 'approved',
+                                paidAt: new Date().toISOString()
+                            });
+                            console.log(`[WEBHOOK] Lead ${doc.id} ATUALIZADO PARA APPROVED no banco.`);
+                        } catch (dbErr: any) {
+                            console.error(`[WEBHOOK] Erro ao atualizar lead no banco: ${dbErr.message}`);
+                        }
+
+                        // Depois tenta enviar o e-mail (isolado)
                         if (leadData.email) {
                             try {
                                 await sendEmail({
@@ -121,13 +79,38 @@ export async function POST(req: Request) {
                                     price: leadData.price || '0,00',
                                     status: 'approved'
                                 });
-                                console.log(`[WEBHOOK] E - mail de aprovação enviado para(fallback email): ${leadData.email} `);
+                                console.log(`[WEBHOOK] E-mail de aprovação enviado com sucesso para ${leadData.email}`);
                             } catch (emailErr: any) {
-                                console.error(`[WEBHOOK] Erro ao enviar e - mail fallback: ${emailErr.message} `);
+                                console.error(`[WEBHOOK] FALHA NO E-MAIL (Mas Dashboard foi atualizado): ${emailErr.message}`);
                             }
                         }
                     }
-                    await batch.commit();
+                } else if (payerEmail) {
+                    // FALLBACK: Tenta por e-mail se não achou por ID de transação diretamente
+                    console.log(`[WEBHOOK] Tentando fallback por e-mail: ${payerEmail}`);
+                    const snapEmail = await leadsRef.where('email', '==', payerEmail).where('status', '==', 'pending').limit(1).get();
+                    if (!snapEmail.empty) {
+                        const doc = snapEmail.docs[0];
+                        try {
+                            await doc.ref.update({
+                                status: 'approved',
+                                transactionId: transactionId,
+                                paidAt: new Date().toISOString()
+                            });
+                            console.log(`[WEBHOOK] Lead encontrado e aprovado via Fallback de E-mail.`);
+
+                            await sendEmail({
+                                email: payerEmail,
+                                plan: doc.data().plan || 'Plano RedFlix',
+                                price: doc.data().price || '0,00',
+                                status: 'approved'
+                            });
+                        } catch (err: any) {
+                            console.error(`[WEBHOOK] Erro no fluxo de fallback: ${err.message}`);
+                        }
+                    } else {
+                        console.warn(`[WEBHOOK] Nenhum lead pendente encontrado para o e-mail ${payerEmail}`);
+                    }
                 }
             }
         }
@@ -135,9 +118,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, message: 'Webhook processed' }, { status: 200 });
 
     } catch (error: any) {
-        console.error('--- [WEBHOOK] ERRO CRÍTICO ---');
-        console.error(error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        console.error('--- [WEBHOOK] ERRO CRÍTICO ---', error.message);
+        return NextResponse.json({ error: 'Internal Error' }, { status: 200 });
     }
 }
-

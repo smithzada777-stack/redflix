@@ -51,6 +51,18 @@ function CheckoutContent() {
         return () => clearInterval(timer);
     }, []);
 
+    // PAYMENT SUCCESS SYNC (Garante que o banco seja avisado quando o front detecta o pagamento)
+    useEffect(() => {
+        if (isPaid && activePixId) {
+            console.log("--- SINCRONIZANDO APROVAÇÃO COM O BANCO ---");
+            axios.get(`/api/check-status?id=${activePixId}`).then(() => {
+                console.log("Banco sincronizado e Lead aprovado no Dash.");
+            }).catch(err => {
+                console.error("Erro na sincronização final:", err);
+            });
+        }
+    }, [isPaid, activePixId]);
+
     // Payment Monitoring
     useEffect(() => {
         if (!showPix) return;
@@ -237,7 +249,7 @@ function CheckoutContent() {
                         <span className="text-[10px] font-black uppercase tracking-widest">Voltar</span>
                     </Link>
                     <div className="relative w-44 h-12">
-                        <Image src="/images/brand/logo.png" alt="RedFlix" fill className="object-contain" priority />
+                        <Image src="https://i.imgur.com/6H5gxcw.png" alt="RedFlix" fill className="object-contain" priority />
                     </div>
                 </div>
             </nav>
@@ -314,13 +326,13 @@ function CheckoutContent() {
                                                     Voltar para o Início
                                                 </button>
                                                 <a
-                                                    href="https://wa.me/5500000000000" // Replace with real support number if available
+                                                    href="https://wa.me/5571991644164?text=%20Olá,%20acabei%20de%20realizar%20o%20pagamento%20do%20meu%20plano%20RedFlix%20e%20gostaria%20de%20agilizar%20minha%20liberação."
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="w-full bg-primary/10 border border-primary/20 text-primary font-black py-4 rounded-xl uppercase tracking-widest text-[10px] hover:bg-primary/20 transition-all flex items-center justify-center gap-2"
                                                 >
                                                     <Headphones size={14} />
-                                                    Dificuldade com o Acesso? Suporte VIP
+                                                    Liberação Humana (WhatsApp)
                                                 </a>
                                             </div>
                                         </motion.div>
@@ -391,10 +403,11 @@ function CheckoutContent() {
                                             animate={{ opacity: 1, scale: 1 }}
                                             className="text-center"
                                         >
-                                            <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 mb-8">
-                                                <p className="text-green-500 font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
-                                                    <CheckCircle2 size={14} /> Sucesso! Tudo pronto para você.
-                                                </p>
+                                            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6">
+                                                <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">Seu tempo para pagar:</p>
+                                                <div className="text-3xl font-black italic text-primary animate-pulse">
+                                                    {formatTime(timeLeft)}
+                                                </div>
                                             </div>
 
                                             <div className="bg-white p-6 rounded-3xl inline-block shadow-2xl mb-6 group relative overflow-hidden border-4 border-primary/20">

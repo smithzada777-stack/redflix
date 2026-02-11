@@ -46,7 +46,7 @@ export default function ContentCarousel({ title, items, delay = 0 }: CarouselPro
                     <div
                         className={`flex gap-3 md:gap-4 px-4 animate-scroll ${isPaused ? 'pause-animation' : ''}`}
                         style={{
-                            animationDuration: '40s',
+                            animationDuration: '15s',
                             animationDelay: `${delay}s`
                         }}
                     >

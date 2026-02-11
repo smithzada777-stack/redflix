@@ -46,7 +46,7 @@ export default function WhatsAppButton() {
 
             {/* Main Red Button (Fixo) */}
             <Link
-                href="https://wa.me/5571991644164"
+                href="https://wa.me/5571991644164?text=%20Olá,%20vi%20o%20site%20RedFlix%20e%20gostaria%20de%20tirar%20algumas%20dúvidas."
                 target="_blank"
                 className="relative z-10 w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(229,9,20,0.4)] cursor-pointer hover:shadow-[0_15px_40px_rgba(229,9,20,0.6)] transition-all duration-500 hover:scale-110 active:scale-95"
             >

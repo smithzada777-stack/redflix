@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, CheckCircle2, Star, QrCode, ShieldCheck, Mail, Phone, Loader2, PartyPopper, Headphones } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Star, QrCode, ShieldCheck, Mail, Phone, Loader2, PartyPopper, Headphones, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
@@ -30,6 +30,21 @@ function SimpleCheckoutContent() {
     const [pixImage, setPixImage] = useState('');
     const [currentLeadId, setCurrentLeadId] = useState(leadIdParam || '');
     const [activePixId, setActivePixId] = useState('');
+    const [timeLeft, setTimeLeft] = useState(600); // 10 Minutos
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    };
+
+    useEffect(() => {
+        if (step !== 2) return;
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [step]);
 
     // --- Price & Savings Calculation Logic ---
     let originalPrice = 0;
@@ -73,6 +88,14 @@ function SimpleCheckoutContent() {
 
         fetchLead();
     }, [leadIdParam]);
+
+    // PAYMENT SUCCESS SYNC
+    useEffect(() => {
+        if (step === 3 && activePixId) {
+            console.log("--- SINCRONIZANDO APROVAÇÃO (SIMPLE) ---");
+            axios.get(`/api/check-status?id=${activePixId}`).catch(err => console.error(err));
+        }
+    }, [step, activePixId]);
 
     // --- Real-time Payment Monitor ---
     useEffect(() => {
@@ -312,7 +335,7 @@ function SimpleCheckoutContent() {
         <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-4 selection:bg-primary/30">
             {/* Top Logo */}
             <div className="mb-8 relative w-48 h-12">
-                <Image src="/images/brand/logo.png" alt="RedFlix" fill className="object-contain" priority />
+                <Image src="https://i.imgur.com/6H5gxcw.png" alt="RedFlix" fill className="object-contain" priority />
             </div>
 
             <div className="w-full max-w-md bg-[#0f0f0f] border border-white/10 rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
@@ -323,7 +346,7 @@ function SimpleCheckoutContent() {
                 {/* Header Section */}
                 <div className="text-center mb-10 relative z-10">
                     <div className="relative w-40 h-12 mx-auto mb-4">
-                        <Image src="/images/brand/logo.png" alt="RedFlix" fill className="object-contain" unoptimized />
+                        <Image src="https://i.imgur.com/6H5gxcw.png" alt="RedFlix" fill className="object-contain" unoptimized />
                     </div>
                     <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl mx-auto flex items-center justify-center mb-4 border border-primary/20 shadow-inner">
                         <ShieldCheck className="text-primary" size={32} />
@@ -459,56 +482,96 @@ function SimpleCheckoutContent() {
                                 )}
                             </button>
                         </motion.form>
-                    ) : (
+                    ) : step === 2 ? (
                         <motion.div
                             key="pix"
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
                             className="text-center relative z-10"
                         >
-                            <div className="relative group p-2 mb-8">
-                                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-75 group-hover:scale-100 transition-transform" />
-                                <div className="bg-white p-5 rounded-[2.5rem] inline-block shadow-2xl relative">
-                                    <img
-                                        src={pixImage.startsWith('data:') ? pixImage : `data:image/png;base64,${pixImage}`}
-                                        alt="QR Code Pix"
-                                        className="w-52 h-52 object-contain"
-                                    />
+                            <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 shadow-2xl">
+                                <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">Seu tempo para pagar:</p>
+                                <div className="text-4xl font-black italic text-primary animate-pulse mb-8">
+                                    {formatTime(timeLeft)}
+                                </div>
+
+                                <div className="relative group p-2 mb-8">
+                                    <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-75 group-hover:scale-100 transition-transform" />
+                                    <div className="bg-white p-5 rounded-[2.5rem] inline-block shadow-2xl relative border-4 border-primary/20">
+                                        <img
+                                            src={pixImage.startsWith('data:') ? pixImage : `data:image/png;base64,${pixImage}`}
+                                            alt="QR Code Pix"
+                                            className="w-52 h-52 object-contain"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 px-2">
+                                    <div className="space-y-2 text-left">
+                                        <p className="text-[9px] text-gray-500 font-black uppercase tracking-[0.2em] ml-2">Copia e Cola:</p>
+                                        <div className="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-[11px] text-gray-400 font-mono break-all line-clamp-2">
+                                            {pixCode}
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(pixCode);
+                                            alert('Código Pix copiado!');
+                                        }}
+                                        className="w-full bg-primary hover:bg-red-600 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-primary/30 text-xs uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95"
+                                    >
+                                        <Copy size={18} />
+                                        COPIAR CÓDIGO PIX
+                                    </button>
+
+                                    <div className="bg-white/5 rounded-xl p-4 flex items-center justify-between border border-white/5 mt-4">
+                                        <div className="flex flex-col items-start px-2">
+                                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-600">Enviando acesso para:</span>
+                                            <span className="text-xs font-black italic text-white line-clamp-1">{formData.email}</span>
+                                        </div>
+                                        <div className="bg-primary/20 p-2 rounded-lg">
+                                            <Mail size={16} className="text-primary" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div className="space-y-4 px-2">
-                                <p className="text-[11px] text-gray-500 font-medium leading-relaxed">
-                                    Após o pagamento, o seu acesso ao <strong className="text-white italic">{planName}</strong> será liberado instantaneamente nesta tela.
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="success"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="text-center space-y-8 relative z-10 pt-10"
+                        >
+                            <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/30">
+                                <CheckCircle2 size={48} className="text-green-500" />
+                            </div>
+                            <div className="space-y-4">
+                                <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white">Pagamento Aprovado!</h2>
+                                <p className="text-gray-400 text-sm max-w-xs mx-auto">
+                                    Identificamos seu Pix! Seus dados de acesso foram enviados para:
+                                    <span className="block text-primary font-black mt-2 text-lg underline">{formData.email}</span>
                                 </p>
+                            </div>
 
-                                <div className="space-y-2">
-                                    <p className="text-[9px] text-gray-500 font-black uppercase tracking-[0.2em]">Copia e Cola:</p>
-                                    <div className="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-[10px] text-gray-400 font-mono break-all line-clamp-2">
-                                        {pixCode}
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={() => {
-                                        navigator.clipboard.writeText(pixCode);
-                                        alert('Código Pix copiado!');
-                                    }}
-                                    className="w-full bg-white/5 hover:bg-primary hover:text-white text-white font-black py-5 rounded-2xl transition-all border border-white/10 text-[11px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-lg hover:shadow-primary/30"
+                            <div className="flex flex-col gap-3 max-w-xs mx-auto pt-6">
+                                <a
+                                    href="https://wa.me/5571991644164?text=%20Olá,%20acabei%20de%20realizar%20o%20pagamento%20do%20meu%20plano%20RedFlix%20e%20gostaria%20de%20agilizar%20minha%20liberação."
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full bg-green-600 hover:bg-green-700 text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl shadow-green-900/20 uppercase tracking-widest text-xs"
                                 >
-                                    <CheckCircle2 size={18} className="text-primary group-hover:text-white" />
-                                    COPIAR CÓDIGO PIX
+                                    <Headphones size={20} />
+                                    Liberação Humana (WhatsApp)
+                                </a>
+                                <button
+                                    onClick={() => router.push('/')}
+                                    className="w-full bg-white/5 border border-white/10 text-gray-500 font-black py-4 rounded-xl hover:bg-white/10 transition-all uppercase tracking-widest text-[11px]"
+                                >
+                                    Voltar para o Início
                                 </button>
-
-                                <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 flex items-center justify-between">
-                                    <div className="flex flex-col items-start px-2">
-                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-600">Enviando acesso para:</span>
-                                        <span className="text-xs font-black italic text-white">{formData.email}</span>
-                                    </div>
-                                    <div className="bg-primary/20 p-2 rounded-lg">
-                                        <Mail size={16} className="text-primary" />
-                                    </div>
-                                </div>
                             </div>
                         </motion.div>
                     )}

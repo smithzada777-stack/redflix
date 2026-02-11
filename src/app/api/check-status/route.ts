@@ -1,80 +1,89 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
 import { adminDb } from '@/lib/firebaseAdmin';
+import { sendEmail } from '@/lib/email';
 
-// Remove quotes and whitespace from tokens if any
 const PUSHINPAY_TOKEN = (process.env.PUSHINPAY_TOKEN || process.env.PUSHINPAY_API_KEY || '').replace(/['"]/g, '').trim();
 
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const transactionId = searchParams.get('id');
-        const debugMode = searchParams.get('debug');
 
         if (!transactionId) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
         const tid = transactionId.toLowerCase();
-        console.log(`[CHECK STATUS] Verificando ID: ${tid}`);
 
-        // 0. DEBUG MODE REMOVIDO PARA TESTE REAL
-
-        // 1. PRIMEIRO: Verificar no nosso próprio banco de dados
-        // Se já estiver pago no DB (via webhook ou polling anterior), retornamos sucesso direto
-        const paymentDoc = await adminDb.collection('payments').doc(tid).get();
-        if (paymentDoc.exists) {
-            const currentStatus = (paymentDoc.data()?.status || '').toLowerCase();
-            const positiveStatuses = ['paid', 'approved', 'confirmed', 'concluido', 'sucesso'];
-
-            if (positiveStatuses.includes(currentStatus)) {
-                console.log(`[CHECK STATUS] Transação ${tid} já está aprovada no banco de dados.`);
-                return NextResponse.json({ status: currentStatus, paid: true });
-            }
-        }
-
-        // 2. SEGUNDO: Consultar a API da PushinPay (Fallback)
+        // 1. CONSULTA DIRETA NA API DA PUSHINPAY
         try {
-            const response = await axios.get(`https://api.pushinpay.com.br/api/pix/cashIn/${tid}`, {
+            const response = await axios.get(`https://api.pushinpay.com.br/api/transactions/${tid}`, {
                 headers: {
                     'Authorization': `Bearer ${PUSHINPAY_TOKEN}`,
                     'Accept': 'application/json'
                 },
-                timeout: 5000
+                timeout: 10000
             });
 
             const data = response.data;
             const remoteStatus = (data.status || data.transaction_status || '').toString().toLowerCase();
             const positiveStatuses = ['paid', 'approved', 'confirmed', 'concluido', 'sucesso'];
+            const isPaid = positiveStatuses.includes(remoteStatus);
 
-            console.log(`[CHECK STATUS] Resposta da API PushinPay: ${remoteStatus}`);
+            // 2. LÓGICA AUTO-PROCESSÁVEL (SE NÃO TEM WEBHOOK, O CHECK-STATUS FAZ O TRABALHO)
+            if (isPaid && adminDb) {
+                const leadsRef = adminDb.collection('leads');
+                const snapshot = await leadsRef.where('transactionId', '==', tid).get();
 
-            if (positiveStatuses.includes(remoteStatus)) {
-                // Sincronizar banco de dados
-                await adminDb.collection('payments').doc(tid).set({
-                    status: 'paid',
-                    updated_at: new Date().toISOString(),
-                    check_method: 'manual_api_poll'
-                }, { merge: true });
+                if (!snapshot.empty) {
+                    for (const doc of snapshot.docs) {
+                        const leadData = doc.data();
 
-                return NextResponse.json({ status: 'paid', paid: true });
+                        // Processa apenas se ainda não estiver aprovado
+                        if (leadData.status !== 'approved') {
+                            console.log(`[CHECK-STATUS] Detectado pagamento para Lead ${doc.id}. Aprovando e enviando e-mail...`);
+
+                            // Atualiza no banco (Dashboard)
+                            await doc.ref.update({
+                                status: 'approved',
+                                paidAt: new Date().toISOString()
+                            });
+
+                            // Dispara o E-mail de Aprovação
+                            if (leadData.email) {
+                                try {
+                                    await sendEmail({
+                                        email: leadData.email,
+                                        plan: leadData.plan || 'Plano RedFlix',
+                                        price: leadData.price || '0,00',
+                                        status: 'approved'
+                                    });
+                                    console.log(`[CHECK-STATUS] E-mail de aprovação enviado.`);
+                                } catch (emailErr) {
+                                    console.error("[CHECK-STATUS] Falha ao enviar e-mail:", emailErr);
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
-            return NextResponse.json({ status: remoteStatus, paid: false });
+            return NextResponse.json({
+                status: remoteStatus,
+                paid: isPaid
+            });
 
         } catch (apiError: any) {
-            // Em vez de dar erro 502 (que assusta o usuário no console), retornamos o status atual do DB
-            console.warn(`[CHECK STATUS] PushinPay API instável para ID ${tid}: ${apiError.message}`);
-            const currentStatus = paymentDoc.exists ? (paymentDoc.data()?.status || 'pending') : 'pending';
+            console.warn(`[CHECK STATUS] API instável para ID ${tid}: ${apiError.message}`);
             return NextResponse.json({
-                status: currentStatus,
-                paid: false,
-                message: 'API externa indisponível momentaneamente, usando cache local.'
+                status: 'pending',
+                paid: false
             });
         }
 
     } catch (error: any) {
         console.error('[CHECK STATUS] Erro Interno:', error.message);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ status: 'pending', paid: false }, { status: 200 });
     }
 }

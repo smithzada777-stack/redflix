@@ -13,7 +13,7 @@ export default function Navbar() {
                 <Link href="/">
                     <div className="relative w-40 h-10 md:w-56 md:h-16 hover:opacity-80 transition-opacity border-none outline-none ring-0">
                         <Image
-                            src="/images/brand/logo.png"
+                            src="https://i.imgur.com/6H5gxcw.png"
                             alt="RedFlix Logo"
                             fill
                             className="object-contain object-center md:object-left"
