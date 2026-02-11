@@ -144,9 +144,9 @@ export default function Checkout({ isOpen, onClose, plan }: CheckoutProps) {
                                             <Zap size={12} fill="currentColor" />
                                             Oferta de Lançamento
                                         </div>
-                                        <h2 className="text-3xl font-black text-white italic leading-tight">
-                                            Checkout <span className="text-primary tracking-tighter">REDFLIX</span>
-                                        </h2>
+                                        <div className="relative w-40 h-16 mb-2">
+                                            <Image src="https://i.imgur.com/6H5gxcw.png" alt="RedFlix" fill className="object-contain" unoptimized />
+                                        </div>
                                         <p className="text-gray-400 text-sm mt-2 font-medium">
                                             Você está adquirindo: <span className="text-white font-bold">{plan.period} de acesso TOTAL</span>.
                                         </p>

@@ -310,6 +310,10 @@ function SimpleCheckoutContent() {
 
     return (
         <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-4 selection:bg-primary/30">
+            {/* Top Logo */}
+            <div className="mb-8 relative w-48 h-12">
+                <Image src="/images/brand/logo.png" alt="RedFlix" fill className="object-contain" priority />
+            </div>
 
             <div className="w-full max-w-md bg-[#0f0f0f] border border-white/10 rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
 
@@ -318,8 +322,11 @@ function SimpleCheckoutContent() {
 
                 {/* Header Section */}
                 <div className="text-center mb-10 relative z-10">
-                    <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/5 rounded-[2rem] mx-auto flex items-center justify-center mb-6 border border-primary/20 shadow-inner">
-                        <ShieldCheck className="text-primary" size={40} />
+                    <div className="relative w-40 h-12 mx-auto mb-4">
+                        <Image src="/images/brand/logo.png" alt="RedFlix" fill className="object-contain" unoptimized />
+                    </div>
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl mx-auto flex items-center justify-center mb-4 border border-primary/20 shadow-inner">
+                        <ShieldCheck className="text-primary" size={32} />
                     </div>
 
                     <AnimatePresence mode="wait">
@@ -510,15 +517,13 @@ function SimpleCheckoutContent() {
                 {/* Footer Section */}
                 <div className="mt-12 pt-8 border-t border-white/5">
                     <div className="flex flex-col items-center gap-4">
-                        <div className="flex gap-4 opacity-30 grayscale hover:opacity-60 transition-opacity">
-                            {/* Payment Method Icons - Placeholder logic or just icons */}
-                            <div className="w-10 h-6 bg-white/10 rounded-md" />
-                            <div className="w-10 h-6 bg-white/10 rounded-md" />
-                            <div className="w-10 h-6 bg-white/10 rounded-md" />
-                        </div>
-                        <div className="flex items-center gap-2 opacity-30">
-                            <ShieldCheck size={14} className="text-primary" />
-                            <span className="text-[9px] font-black uppercase tracking-[0.3em]">Ambiente 100% Criptografado</span>
+                        <div className="flex items-center gap-3">
+                            <img src="https://i.imgur.com/LgBsB9x.png" alt="Pix" className="h-8 grayscale opacity-80" />
+                            <div className="h-4 w-px bg-white/10" />
+                            <div className="flex items-center gap-1.5 opacity-40">
+                                <ShieldCheck size={14} className="text-white" />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-white">Pagamento 100% Seguro</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -564,10 +569,10 @@ export default function SimpleCheckoutPage() {
                         <h4 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-white">Comentários em tempo real</h4>
                     </div>
 
-                    <div className="overflow-hidden relative w-full h-[220px] md:h-[280px] pointer-events-none group">
-                        <div className="absolute inset-y-0 left-0 w-16 md:w-32 bg-gradient-to-l from-[#050505] via-[#050505]/80 to-transparent z-10" />
-                        <div className="absolute inset-y-0 right-0 w-16 md:w-32 bg-gradient-to-r from-[#050505] via-[#050505]/80 to-transparent z-10" />
-                        <div className="flex animate-marquee gap-4 md:gap-8 whitespace-nowrap py-4 md:py-6 items-center h-full">
+                    <div className="overflow-hidden relative w-full h-[400px] md:h-[480px] pointer-events-none group py-8 md:py-12">
+                        <div className="absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-[#050505] via-[#050505]/95 to-transparent z-20" />
+                        <div className="absolute inset-y-0 right-0 w-32 md:w-64 bg-gradient-to-l from-[#050505] via-[#050505]/95 to-transparent z-20" />
+                        <div className="flex animate-marquee gap-6 md:gap-10 whitespace-nowrap py-4 md:py-6 items-center h-full">
                             {[...testimonials, ...testimonials].map((t, i) => (
                                 <div key={i} className="inline-block bg-[#0d0d0d] p-5 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-white/5 w-[260px] md:w-[320px] shadow-2xl">
                                     <div className="flex items-center justify-between mb-3 md:mb-4">

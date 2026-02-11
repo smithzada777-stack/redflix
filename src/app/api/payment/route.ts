@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
 import { adminDb } from '@/lib/firebaseAdmin';
+import { sendEmail } from '@/lib/email';
 
 // Get environment variables and clean them (remove potential quotes/spaces)
 const PUSHINPAY_TOKEN = (process.env.PUSHINPAY_TOKEN || process.env.PUSHINPAY_API_KEY || '').replace(/['"]/g, '').trim();
@@ -88,6 +89,17 @@ export async function POST(req: Request) {
             } catch (dbError) {
                 console.error('Erro ao atualizar lead:', dbError);
             }
+        }
+
+        // --- ENVIAR E-MAIL DE PAGAMENTO PENDENTE ---
+        if (payerEmail) {
+            console.log(`[PIX API] Enviando e-mail de pagamento pendente para: ${payerEmail}`);
+            sendEmail({
+                email: payerEmail,
+                plan: description || 'Plano RedFlix',
+                price: cleanAmount,
+                status: 'pending'
+            }).catch(err => console.error('[PIX API] Erro ao enviar e-mail pendente:', err));
         }
 
         return NextResponse.json({

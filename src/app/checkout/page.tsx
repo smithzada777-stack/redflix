@@ -241,8 +241,8 @@ function CheckoutContent() {
                         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
                         <span className="text-[10px] font-black uppercase tracking-widest">Voltar</span>
                     </Link>
-                    <div className="relative w-24 h-6 brightness-0 invert opacity-50">
-                        <Image src="/images/brand/logo.png" alt="RedFlix" fill className="object-contain" />
+                    <div className="relative w-44 h-12">
+                        <Image src="/images/brand/logo.png" alt="RedFlix" fill className="object-contain" priority />
                     </div>
                 </div>
             </nav>
@@ -461,12 +461,14 @@ function CheckoutContent() {
                                 </AnimatePresence>
 
                                 <div className="mt-12 flex flex-col items-center gap-6 border-t border-white/5 pt-8">
-                                    <div className="flex items-center gap-4">
-                                        <img src="https://i.imgur.com/LgBsB9x.png" alt="Pix" className="h-6 grayscale opacity-80" />
-                                        <div className="h-4 w-px bg-white/10" />
-                                        <div className="flex items-center gap-1.5 opacity-50">
-                                            <ShieldCheck size={14} className="text-white" />
-                                            <span className="text-[9px] font-black uppercase tracking-widest text-white">Ambiente Seguro</span>
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <img src="https://i.imgur.com/LgBsB9x.png" alt="Pix" className="h-8 grayscale opacity-80" />
+                                            <div className="h-4 w-px bg-white/10" />
+                                            <div className="flex items-center gap-1.5 opacity-50">
+                                                <ShieldCheck size={14} className="text-white" />
+                                                <span className="text-[9px] font-black uppercase tracking-widest text-white">Pagamento 100% Seguro</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -482,10 +484,10 @@ function CheckoutContent() {
                         <h4 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter">Comentários em tempo real</h4>
                     </div>
 
-                    <div className="overflow-hidden relative w-full h-36 md:h-48 pointer-events-none group">
-                        <div className="absolute inset-y-0 left-0 w-16 md:w-32 bg-gradient-to-l from-[#050505] via-[#050505]/80 to-transparent z-10" />
-                        <div className="absolute inset-y-0 right-0 w-16 md:w-32 bg-gradient-to-r from-[#050505] via-[#050505]/80 to-transparent z-10" />
-                        <div className="flex animate-marquee gap-4 md:gap-8 whitespace-nowrap py-4 md:py-6">
+                    <div className="overflow-hidden relative w-full h-[400px] md:h-[480px] pointer-events-none group py-10 md:py-16">
+                        <div className="absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-[#050505] via-[#050505]/95 to-transparent z-20" />
+                        <div className="absolute inset-y-0 right-0 w-32 md:w-64 bg-gradient-to-l from-[#050505] via-[#050505]/95 to-transparent z-20" />
+                        <div className="flex animate-marquee gap-6 md:gap-10 whitespace-nowrap py-4 md:py-6 items-center h-full">
                             {[...testimonials, ...testimonials].map((t, i) => (
                                 <div key={i} className="inline-block bg-[#0d0d0d] p-5 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-white/5 w-[260px] md:w-[320px] shadow-xl">
                                     <div className="flex items-center justify-between mb-3 md:mb-4">

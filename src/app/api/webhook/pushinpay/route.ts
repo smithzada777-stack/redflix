@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
 import querystring from 'querystring';
+import { sendEmail } from '@/lib/email';
 
 export async function POST(req: Request) {
     try {
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
         // console.log('Payload:', JSON.stringify(data, null, 2)); // Optional: log full payload for debug
 
         // MANUAL PASSO 3: O ID e Status devem ser tratados com rigor
-        const transactionId = (data.id || data.transaction_id || data.reference || data.external_id)?.toString().toLowerCase();
+        const transactionId = (data.id || data.transaction_id || data.reference || data.external_id || data.reference_id)?.toString().toLowerCase();
         const status = (data.status || data.transaction_status || '').toString().toLowerCase();
         const payerEmail = data.payer_email || data.email || data.payer?.email;
 
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'ID not found' }, { status: 400 });
         }
 
-        console.log(`[WEBHOOK] ID: ${transactionId} | Status: ${status}`);
+        console.log(`[WEBHOOK] ID: ${transactionId} | Status: ${status} `);
 
         // MANUAL PASSO 3: GRAVA NO DISCO (FIREBASE) USANDO O ADMIN SDK
         // 1. Update "payments" collection (The "Blindado" Webhook)
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
                 updated_at: new Date().toISOString(),
                 webhook_payload: data
             }, { merge: true });
-            console.log(`[WEBHOOK] Pagamento ${transactionId} atualizado para status: ${status}`);
+            console.log(`[WEBHOOK] Pagamento ${transactionId} atualizado para status: ${status} `);
         } catch (dbError) {
             console.error('[WEBHOOK] Erro ao atualizar payments:', dbError);
             throw dbError; // Critical error
@@ -52,46 +53,80 @@ export async function POST(req: Request) {
         // 2. If positive status, update "leads" collection
         const positiveStatuses = ['paid', 'approved', 'confirmed', 'concluido', 'sucesso'];
         if (positiveStatuses.includes(status)) {
-            console.log(`[WEBHOOK] Pagamento confirmado. Atualizando leads...`);
+            console.log(`[WEBHOOK] Pagamento confirmado.Atualizando leads...`);
+
+            let leadUpdated = false;
 
             // Search manually since Admin SDK query syntax is slightly different but logic is same
             // Strategy 1: Find by transactionId
             const leadsRef = adminDb.collection('leads');
-            const snapshotById = await leadsRef.where('transactionId', '==', transactionId).get();
-
-            let leadUpdated = false;
+            const snapshotById = await leadsRef
+                .where('transactionId', '==', transactionId)
+                .limit(5)
+                .get();
 
             if (!snapshotById.empty) {
                 const batch = adminDb.batch();
-                snapshotById.forEach((doc: any) => {
+                for (const doc of snapshotById.docs) {
+                    const leadData = doc.data();
                     batch.update(doc.ref, {
                         status: 'approved',
                         paidAt: new Date().toISOString()
                     });
                     console.log(`[WEBHOOK] Lead ${doc.id} encontrado por ID.`);
-                });
+
+                    // ENVIAR E-MAIL DE PAGAMENTO APROVADO
+                    if (leadData.email) {
+                        try {
+                            await sendEmail({
+                                email: leadData.email,
+                                plan: leadData.plan || 'Plano RedFlix',
+                                price: leadData.price || '0,00',
+                                status: 'approved'
+                            });
+                            console.log(`[WEBHOOK] E - mail de aprovação enviado para: ${leadData.email} `);
+                        } catch (emailErr: any) {
+                            console.error(`[WEBHOOK] Erro ao enviar e - mail: ${emailErr.message} `);
+                        }
+                    }
+                }
                 await batch.commit();
                 leadUpdated = true;
             }
 
             // Strategy 2: Find by Email (Fallback)
             if (!leadUpdated && payerEmail) {
-                console.log(`[WEBHOOK] Buscando lead por email: ${payerEmail}`);
+                console.log(`[WEBHOOK] Buscando lead por email: ${payerEmail} `);
                 const snapshotByEmail = await leadsRef
                     .where('email', '==', payerEmail)
-                    .orderBy('createdAt', 'desc')
-                    .limit(1)
+                    .limit(5)
                     .get();
 
                 if (!snapshotByEmail.empty) {
                     const batch = adminDb.batch();
-                    snapshotByEmail.forEach((doc: any) => {
+                    for (const doc of snapshotByEmail.docs) {
+                        const leadData = doc.data();
                         batch.update(doc.ref, {
                             status: 'approved',
                             paidAt: new Date().toISOString()
                         });
                         console.log(`[WEBHOOK] Lead ${doc.id} encontrado por Email.`);
-                    });
+
+                        // ENVIAR E-MAIL DE PAGAMENTO APROVADO
+                        if (leadData.email) {
+                            try {
+                                await sendEmail({
+                                    email: leadData.email,
+                                    plan: leadData.plan || 'Plano RedFlix',
+                                    price: leadData.price || '0,00',
+                                    status: 'approved'
+                                });
+                                console.log(`[WEBHOOK] E - mail de aprovação enviado para(fallback email): ${leadData.email} `);
+                            } catch (emailErr: any) {
+                                console.error(`[WEBHOOK] Erro ao enviar e - mail fallback: ${emailErr.message} `);
+                            }
+                        }
+                    }
                     await batch.commit();
                 }
             }
@@ -105,3 +140,4 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+
