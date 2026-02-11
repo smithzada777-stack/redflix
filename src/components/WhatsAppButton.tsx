@@ -30,16 +30,16 @@ export default function WhatsAppButton() {
             <div
                 className={`
                     absolute right-0 bottom-0
-                    bg-primary text-white h-16 px-10 rounded-full shadow-2xl shadow-primary/40
-                    transition-all duration-700 ease-[underline] flex items-center justify-center
+                    bg-primary text-white h-12 md:h-16 px-6 md:px-10 rounded-full shadow-2xl shadow-primary/40
+                    transition-all duration-700 ease-out flex items-center justify-center
                     whitespace-nowrap border border-white/10 origin-right
                     ${showTooltip
-                        ? 'opacity-100 translate-x-[-80px] scale-100 pointer-events-auto'
+                        ? 'opacity-100 translate-x-[-70px] md:translate-x-[-80px] scale-100 pointer-events-auto'
                         : 'opacity-0 translate-x-0 scale-0 pointer-events-none'
                     }
                 `}
             >
-                <span className="font-bold text-sm tracking-tight text-white">
+                <span className="font-bold text-[10px] md:text-sm tracking-tight text-white">
                     Ficou com dúvida? <span className="font-black underline">Chame o suporte!</span>
                 </span>
             </div>

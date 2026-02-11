@@ -51,6 +51,10 @@ export default function Checkout({ isOpen, onClose, plan }: CheckoutProps) {
         setLoading(true);
 
         try {
+            // Gerar Payload Pix
+            const priceValue = plan?.price.replace(/[^\d]/g, '');
+            const pixPayload = `00020126330014BR.GOV.BCB.PIX0114${PIX_KEY}520400005303986540${priceValue}5802BR5913${MERCHANT_NAME}6009${MERCHANT_CITY}62070503***6304`;
+
             // 1. Salvar Lead no Firebase (Pendente)
             await addDoc(collection(db, "leads"), {
                 email: formData.email,
@@ -61,7 +65,7 @@ export default function Checkout({ isOpen, onClose, plan }: CheckoutProps) {
                 createdAt: serverTimestamp()
             });
 
-            // 2. Enviar E-mail de "Aguardando Pagamento"
+            // 2. Enviar E-mail de "Aguardando Pagamento" com Código Pix
             await fetch('/api/send-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -69,7 +73,8 @@ export default function Checkout({ isOpen, onClose, plan }: CheckoutProps) {
                     email: formData.email,
                     plan: plan?.period,
                     price: plan?.price,
-                    status: 'pending'
+                    status: 'pending',
+                    pixCode: pixPayload
                 })
             });
 
@@ -145,7 +150,7 @@ export default function Checkout({ isOpen, onClose, plan }: CheckoutProps) {
                                             Oferta de Lançamento
                                         </div>
                                         <div className="relative w-40 h-16 mb-2">
-                                            <Image src="https://i.imgur.com/6H5gxcw.png" alt="RedFlix" fill className="object-contain" unoptimized />
+                                            <Image src="/images/brand/logo.png" alt="RedFlix" fill className="object-contain" unoptimized />
                                         </div>
                                         <p className="text-gray-400 text-sm mt-2 font-medium">
                                             Você está adquirindo: <span className="text-white font-bold">{plan.period} de acesso TOTAL</span>.
@@ -169,28 +174,30 @@ export default function Checkout({ isOpen, onClose, plan }: CheckoutProps) {
                                         </div>
                                     </div>
 
-                                    {/* Extra Bonuses */}
-                                    <div className="space-y-3">
-                                        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Bônus Exclusivos:</p>
-                                        {bonuses.map((bonus, i) => (
-                                            <div key={i} className="flex items-center gap-2 text-[11px] font-bold text-white/80">
-                                                <CheckCircle2 size={14} className="text-green-500 shrink-0" />
-                                                {bonus}
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Mini Testimonials */}
-                                    <div className="grid grid-cols-2 gap-3 pt-4">
-                                        {testimonials.map((t, i) => (
-                                            <div key={i} className="bg-white/5 p-3 rounded-xl border border-white/5">
-                                                <div className="flex gap-0.5 mb-1.5">
-                                                    {[...Array(5)].map((_, j) => <Star key={j} size={8} fill="#ffc107" className="text-[#ffc107]" />)}
+                                    {/* Extra Bonuses & Testimonials Grouped */}
+                                    <div className="space-y-2 pt-2">
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Bônus Exclusivos:</p>
+                                            {bonuses.map((bonus, i) => (
+                                                <div key={i} className="flex items-center gap-2 text-[11px] font-bold text-white/80">
+                                                    <CheckCircle2 size={14} className="text-green-500 shrink-0" />
+                                                    {bonus}
                                                 </div>
-                                                <p className="text-[10px] text-white/90 font-bold leading-tight mb-1 italic">"{t.comment}"</p>
-                                                <p className="text-[8px] text-gray-500 font-black uppercase tracking-tighter">— {t.name}</p>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
+
+                                        {/* Mini Testimonials - Fixos e Brancos */}
+                                        <div className="grid grid-cols-2 gap-2 pt-1.5">
+                                            {testimonials.map((t, i) => (
+                                                <div key={i} className="bg-white p-2.5 rounded-lg border border-gray-100 shadow-sm">
+                                                    <div className="flex gap-0.5 mb-1">
+                                                        {[...Array(5)].map((_, j) => <Star key={j} size={8} fill="#ffc107" className="text-[#ffc107]" />)}
+                                                    </div>
+                                                    <p className="text-[10px] text-gray-800 font-bold leading-tight mb-1 italic">"{t.comment}"</p>
+                                                    <p className="text-[8px] text-gray-500 font-black uppercase tracking-tighter">— {t.name}</p>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
 

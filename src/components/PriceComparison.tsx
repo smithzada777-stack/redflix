@@ -211,13 +211,26 @@ export default function PriceComparison() {
                     </div>
                 </div>
 
-                {/* Total Cost Alert - COMPACT & PREMIUM */}
-                <div className="mt-10 md:mt-12 bg-white/5 backdrop-blur-sm border border-white/5 rounded-2xl p-6 md:p-5 max-w-3xl mx-auto text-center relative overflow-hidden group">
-                    <p className="text-gray-400 text-sm md:text-lg font-medium relative z-10 leading-relaxed">
-                        Assinar todos separadamente custaria <span className="text-white font-bold underline underline-offset-4 decoration-red-500/30">R$ 2.296,80 por ano</span>.
-                        <br className="hidden md:block" />
-                        <span className="text-primary font-black mt-2 block md:inline md:ml-1 text-xs md:text-base uppercase tracking-wider italic">Aqui você tem tudo isso por muito menos.</span>
-                    </p>
+                {/* Total Cost Alert & CTA Hook - UNIFIED */}
+                <div className="mt-10 md:mt-12 bg-white/5 backdrop-blur-sm border border-white/5 rounded-[2rem] p-6 md:p-10 max-w-4xl mx-auto text-center relative overflow-hidden group">
+                    <div className="relative z-10 space-y-6">
+                        <p className="text-gray-400 text-sm md:text-xl font-medium leading-relaxed">
+                            Assinar todos separadamente custaria <span className="text-white font-bold underline underline-offset-4 decoration-red-500/30">R$ 2.296,80 por ano</span>.
+                            <br className="hidden md:block" />
+                            <span className="text-primary font-black mt-2 block md:inline md:ml-1 text-sm md:text-base uppercase tracking-wider italic">Aqui você tem tudo isso por muito menos.</span>
+                        </p>
+
+                        <div className="pt-4 border-t border-white/5">
+                            <h3 className="text-xl md:text-3xl font-black text-white mb-4 uppercase italic leading-tight">
+                                Vai continuar <span className="text-primary italic">jogando dinheiro fora</span> todo mês?
+                            </h3>
+                            <a href="#plans" className="inline-block bg-primary hover:bg-red-700 text-white font-black py-4 px-10 rounded-full text-xs md:text-sm uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(229,9,20,0.3)]">
+                                Quero economizar agora!
+                            </a>
+                        </div>
+                    </div>
+                    {/* Subtle Background Glow */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/5 blur-3xl rounded-full" />
                 </div>
 
             </div>

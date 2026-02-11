@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${outfit.className} ${inter.variable} ${blackOps.variable}`}>
+      <body className={`${outfit.className} ${inter.variable} ${blackOps.variable} antialiased selection:bg-primary/30 selection:text-white`}>
         {children}
       </body>
     </html>

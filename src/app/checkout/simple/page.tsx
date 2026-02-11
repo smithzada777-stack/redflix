@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, CheckCircle2, QrCode, ShieldCheck, Mail, Phone, Loader2, PartyPopper, Headphones } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Star, QrCode, ShieldCheck, Mail, Phone, Loader2, PartyPopper, Headphones } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
@@ -541,15 +541,10 @@ function SimpleCheckoutContent() {
 }
 
 const testimonials = [
-    { name: 'Marcos Vinicius', text: 'O acesso chegou em menos de 1 minuto no meu email, surreal!' },
-    { name: 'Renata Oliveira', text: 'Suporte nota 10, me ajudaram a configurar na minha Smart TV rápido.' },
-    { name: 'Dr. Ricardo Menezes', text: 'Serviço extremamente profissional e estável. Recomendo para famílias.' },
-    { name: 'Jeferson Silva', text: 'Top viu, ate os jogo do meu timao em 4K passa certinho sem travar.' },
-    { name: 'Bruna Santos', text: 'Os desenho pra criançada salvou muito aqui em casa kkk tem muita coisa.' },
-    { name: 'Dona Maria Luiza', text: 'Muito fácil de usar, até eu que não entendo de tecnologia consegui instalar.' },
-    { name: 'Anderson Costa', text: 'Tava meio assim de comprar mas vale muito a pena pelo preço.' },
-    { name: 'Felipe Almeida', text: 'Melhor que qualquer outro serviço e muito mais barato, já indiquei pra geral.' },
-    { name: 'Sandra Pires', text: 'Amei os canais de culinária e as novelas antigas. Nota mil!' },
+    { name: 'Ricardo Dias', text: 'Finalmente um serviço de qualidade que não trava no meio do jogo. Valeu cada centavo!' },
+    { name: 'Juliana Torres', text: 'Fiquei surpresa com o catálogo, tem tudo que eu procurava e o suporte é nota mil.' },
+    { name: 'André Luiz', text: 'O acesso vitalício é real, já uso há meses e nunca tive problemas. Recomendo d+.' },
+    { name: 'Carla Silveira', text: 'Instalei na minha Smart TV sem erro. Muito fácil e prático de usar.' },
 ];
 
 export default function SimpleCheckoutPage() {
@@ -569,37 +564,31 @@ export default function SimpleCheckoutPage() {
                         <h4 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-white">Comentários em tempo real</h4>
                     </div>
 
-                    <div className="overflow-hidden relative w-full h-[400px] md:h-[480px] pointer-events-none group py-8 md:py-12">
-                        <div className="absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-[#050505] via-[#050505]/95 to-transparent z-20" />
-                        <div className="absolute inset-y-0 right-0 w-32 md:w-64 bg-gradient-to-l from-[#050505] via-[#050505]/95 to-transparent z-20" />
-                        <div className="flex animate-marquee gap-6 md:gap-10 whitespace-nowrap py-4 md:py-6 items-center h-full">
-                            {[...testimonials, ...testimonials].map((t, i) => (
-                                <div key={i} className="inline-block bg-[#0d0d0d] p-5 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-white/5 w-[260px] md:w-[320px] shadow-2xl">
-                                    <div className="flex items-center justify-between mb-3 md:mb-4">
-                                        <div className="flex gap-0.5 text-white/10">
-                                            {[...Array(5)].map((_, j) => (
-                                                <svg key={j} className="w-3 h-3 fill-primary" viewBox="0 0 20 20">
-                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                </svg>
-                                            ))}
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 px-4 max-w-6xl mx-auto">
+                        {testimonials.slice(0, 4).map((t, i) => (
+                            <div key={i} className="bg-white p-4 md:p-6 rounded-[1.5rem] shadow-xl border border-gray-100 flex flex-col justify-between h-full">
+                                <div>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex gap-0.5">
+                                            {[...Array(5)].map((_, j) => <Star key={j} size={8} fill="#e50914" className="text-primary" />)}
                                         </div>
-                                        <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                        <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.3)]" />
                                     </div>
-                                    <p className="text-[10px] md:text-xs text-white/70 font-medium italic whitespace-normal leading-relaxed mb-3 md:mb-4">
+                                    <p className="text-[10px] md:text-xs text-gray-800 font-bold italic leading-relaxed mb-4 line-clamp-4">
                                         "{t.text}"
                                     </p>
-                                    <div className="flex items-center gap-2 md:gap-3 border-t border-white/5 pt-3 md:pt-4">
-                                        <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-primary/20 flex items-center justify-center text-[8px] md:text-[10px] font-black text-primary">
-                                            {t.name.charAt(0)}
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="text-[8px] md:text-[10px] text-white font-black uppercase tracking-widest">{t.name}</p>
-                                            <p className="text-[6px] md:text-[8px] text-gray-600 font-bold uppercase tracking-widest text-left">Membro Verificado</p>
-                                        </div>
+                                </div>
+                                <div className="flex items-center gap-2 md:gap-3 border-t border-gray-100 pt-3">
+                                    <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-primary/20 flex items-center justify-center text-[8px] md:text-[10px] font-black text-primary">
+                                        {t.name.charAt(0)}
+                                    </div>
+                                    <div className="overflow-hidden">
+                                        <p className="text-[8px] md:text-[10px] text-black font-black uppercase tracking-widest truncate">{t.name}</p>
+                                        <p className="text-[6px] md:text-[8px] text-primary font-bold uppercase tracking-widest">Verificado</p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

@@ -13,15 +13,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
 const testimonials = [
-    { name: 'Marcos Vinicius', text: 'O acesso chegou em menos de 1 minuto no meu email, surreal!' },
-    { name: 'Renata Oliveira', text: 'Suporte nota 10, me ajudaram a configurar na minha Smart TV rápido.' },
-    { name: 'Dr. Ricardo Menezes', text: 'Serviço extremamente profissional e estável. Recomendo para famílias.' },
-    { name: 'Jeferson Silva', text: 'Top viu, ate os jogo do meu timao em 4K passa certinho sem travar.' },
-    { name: 'Bruna Santos', text: 'Os desenho pra criançada salvou muito aqui em casa kkk tem muita coisa.' },
-    { name: 'Dona Maria Luiza', text: 'Muito fácil de usar, até eu que não entendo de tecnologia consegui instalar.' },
-    { name: 'Anderson Costa', text: 'Tava meio assim de comprar mas vale muito a pena pelo preço.' },
-    { name: 'Felipe Almeida', text: 'Melhor que qualquer outro serviço e muito mais barato, já indiquei pra geral.' },
-    { name: 'Sandra Pires', text: 'Amei os canais de culinária e as novelas antigas. Nota mil!' },
+    { name: 'Lucas Rocha', text: 'Acabei de pagar e o email chegou na hora. Impressionante a velocidade!' },
+    { name: 'Amanda Lima', text: 'Não acreditava que era vitalício mesmo, mas usei o suporte e confirmaram tudo. 10/10.' },
+    { name: 'Roberto Castro', text: 'Qualidade da imagem no 4K é superior a muitos que já usei. Melhor custo benefício.' },
+    { name: 'Patrícia Gomes', text: 'Configurei no meu celular e na TV da sala sem dor de cabeça. Muito prático.' },
 ];
 
 import { db } from '@/lib/firebase';
@@ -477,40 +472,38 @@ function CheckoutContent() {
                     </div>
                 </div>
 
-                {/* Testimonials Marquee - Larger items with names */}
+                {/* Testimonials Grid - Fixos e Brancos */}
                 <div className="mt-20 md:mt-32 space-y-8">
                     <div className="text-center space-y-2">
                         <p className="text-[10px] text-gray-700 font-black uppercase tracking-[0.5em]">O que nossos membros dizem</p>
                         <h4 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter">Comentários em tempo real</h4>
                     </div>
 
-                    <div className="overflow-hidden relative w-full h-[400px] md:h-[480px] pointer-events-none group py-10 md:py-16">
-                        <div className="absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-[#050505] via-[#050505]/95 to-transparent z-20" />
-                        <div className="absolute inset-y-0 right-0 w-32 md:w-64 bg-gradient-to-l from-[#050505] via-[#050505]/95 to-transparent z-20" />
-                        <div className="flex animate-marquee gap-6 md:gap-10 whitespace-nowrap py-4 md:py-6 items-center h-full">
-                            {[...testimonials, ...testimonials].map((t, i) => (
-                                <div key={i} className="inline-block bg-[#0d0d0d] p-5 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-white/5 w-[260px] md:w-[320px] shadow-xl">
-                                    <div className="flex items-center justify-between mb-3 md:mb-4">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 px-4 max-w-6xl mx-auto">
+                        {testimonials.slice(0, 4).map((t, i) => (
+                            <div key={i} className="bg-white p-4 md:p-6 rounded-[1.5rem] shadow-xl border border-gray-100 flex flex-col justify-between h-full">
+                                <div>
+                                    <div className="flex items-center justify-between mb-3">
                                         <div className="flex gap-0.5">
-                                            {[...Array(5)].map((_, j) => <Star key={j} size={8} fill="#ffc107" className="text-[#ffc107]" />)}
+                                            {[...Array(5)].map((_, j) => <Star key={j} size={8} fill="#e50914" className="text-primary" />)}
                                         </div>
-                                        <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                        <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.3)]" />
                                     </div>
-                                    <p className="text-[10px] md:text-xs text-white/70 font-medium italic whitespace-normal leading-relaxed mb-3 md:mb-4">
+                                    <p className="text-[10px] md:text-xs text-gray-800 font-bold italic leading-relaxed mb-4 line-clamp-4">
                                         "{t.text}"
                                     </p>
-                                    <div className="flex items-center gap-2 md:gap-3 border-t border-white/5 pt-3 md:pt-4">
-                                        <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-primary/20 flex items-center justify-center text-[8px] md:text-[10px] font-black text-primary">
-                                            {t.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <p className="text-[8px] md:text-[10px] text-white font-black uppercase tracking-widest">{t.name}</p>
-                                            <p className="text-[6px] md:text-[8px] text-gray-600 font-bold uppercase tracking-widest">Membro Verificado</p>
-                                        </div>
+                                </div>
+                                <div className="flex items-center gap-2 md:gap-3 border-t border-gray-100 pt-3">
+                                    <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-primary/20 flex items-center justify-center text-[8px] md:text-[10px] font-black text-primary">
+                                        {t.name.charAt(0)}
+                                    </div>
+                                    <div className="overflow-hidden">
+                                        <p className="text-[8px] md:text-[10px] text-black font-black uppercase tracking-widest truncate">{t.name}</p>
+                                        <p className="text-[6px] md:text-[8px] text-primary font-bold uppercase tracking-widest">Verificado</p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </main>

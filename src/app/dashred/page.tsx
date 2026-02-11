@@ -404,7 +404,7 @@ export default function AdminDashboard() {
 
     // --- Dashboard UI ---
     return (
-        <div className="min-h-screen bg-[#020202] text-white font-sans flex overflow-hidden">
+        <div className="h-[100dvh] md:h-screen bg-[#020202] text-white font-sans flex overflow-hidden">
 
             {/* Sidebar Overlay (Mobile) */}
             {isSidebarOpen && (
@@ -464,7 +464,7 @@ export default function AdminDashboard() {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto h-screen relative pt-16 md:pt-0">
+            <main className="flex-1 overflow-y-auto h-[100dvh] md:h-screen relative pt-16 md:pt-0">
                 {activeTab === 'overview' && (
                     <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
 

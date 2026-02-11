@@ -7,9 +7,9 @@ import ContentCarousel from '@/components/ContentCarousel';
 import Testimonials from '@/components/Testimonials';
 import Plans from '@/components/Plans';
 import FAQ from '@/components/FAQ';
-import WhatsAppButton from '@/components/WhatsAppButton';
-import Footer from '@/components/Footer';
 
+import Footer from '@/components/Footer';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 const sportsItems = [
   { id: 1, name: 'Brasileirão', img: '/images/sports/brasileirao.png' },
@@ -50,45 +50,34 @@ const seriesItems = [
 export default function Home() {
   return (
     <main className="min-h-screen bg-black text-white overflow-x-hidden relative">
-      <Navbar />
-      <Hero />
-
-
-      <PriceComparison />
-
-
-
-      <section className="py-16 bg-black">
-        <div className="container mx-auto px-4 md:px-12 mb-12 text-center">
-          <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter">
-            Na <span className="text-primary">REDFLIX</span>, você tem acesso a:
-          </h2>
-        </div>
-
-        <div className="space-y-4">
-          <ContentCarousel title={<>Jogos ao vivo e <span className="text-primary">MUITO MAIS</span>:</>} items={sportsItems} delay={0} />
-          <ContentCarousel title={<>Principais <span className="text-primary">FILMES</span>:</>} items={moviesItems} delay={2} />
-          <ContentCarousel title={<>Melhores <span className="text-primary">SÉRIES</span>:</>} items={seriesItems} delay={4} />
-        </div>
-      </section>
+      <div className="animate-fade-in-up">
+        <Navbar />
+        <Hero />
+        <PriceComparison />
 
 
 
-      <Testimonials />
+        <section className="py-16 bg-black">
+          <div className="container mx-auto px-4 md:px-12 mb-12 text-center">
+            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter">
+              Na <span className="text-primary">REDFLIX</span>, você tem acesso a:
+            </h2>
+          </div>
 
+          <div className="space-y-4">
+            <ContentCarousel title={<>Jogos ao vivo e <span className="text-primary">MUITO MAIS</span>:</>} items={sportsItems} delay={0} />
+            <ContentCarousel title={<>Principais <span className="text-primary">FILMES</span>:</>} items={moviesItems} delay={2} />
+            <ContentCarousel title={<>Melhores <span className="text-primary">SÉRIES</span>:</>} items={seriesItems} delay={4} />
+          </div>
+        </section>
 
-
-      <Plans />
-
-
-
-      <FAQ />
-
-
-      <Footer />
+        <Testimonials />
+        <Plans />
+        <FAQ />
+        <Footer />
+      </div>
 
       <WhatsAppButton />
-
     </main>
   );
 }
