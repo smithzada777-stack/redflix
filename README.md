@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RedFlix Ultra Pro - Plataforma de Streaming IPTV
 
-## Getting Started
+Bem-vindo ao repositório oficial da RedFlix Ultra Pro. Este projeto foi desenvolvido com Next.js 15, Tailwind CSS e integração completa de pagamentos via Pix (PushinPay) e e-mails transacionais (Resend).
 
-First, run the development server:
+## 🚀 Funcionalidades
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Design Premium & Responsivo:** Interface focada em conversão mobile-first, com animações suaves e glassmorphism.
+- **Carrosséis de Conteúdo:** Exibição dinâmica de Filmes, Séries e Esportes.
+- **Checkout Integrado:** Fluxo de pagamento simplificado com Timer de urgência e Geração de Pix automática.
+- **Status em Tempo Real:** O sistema verifica automaticamente o pagamento e libera o acesso.
+- **E-mails Automáticos:** Envio de credenciais de acesso assim que o pagamento é aprovado.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tecnologias
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS v4, Framer Motion.
+- **Backend (API Routes):** Node.js (via Next.js API), Firebase Admin SDK.
+- **Integrações:** PushinPay (Pagamentos), Resend (E-mails).
+- **Hospedagem Recomendada:** Vercel ou Netlify.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Como Rodar Localmente
 
-## Learn More
+1.  **Clone o repositório:**
+    ```bash
+    git clone https://github.com/smithzada777-stack/redflix-final.git
+    cd redflix-final
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+2.  **Instale as dependências:**
+    ```bash
+    npm install
+    # ou
+    yarn install
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3.  **Configure as Variáveis de Ambiente:**
+    Crie um arquivo `.env.local` na raiz do projeto e preencha com suas chaves (use o `.env.example` como base):
+    ```env
+    # Exemplo:
+    FIREBASE_SERVICE_ACCOUNT='{...}'
+    PUSHINPAY_TOKEN='seu_token_aqui'
+    RESEND_API_KEY='re_123...'
+    NEXT_PUBLIC_BASE_URL='http://localhost:3000'
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4.  **Rode o servidor de desenvolvimento:**
+    ```bash
+    npm run dev
+    ```
+    Acesse `http://localhost:3000` no seu navegador.
 
-## Deploy on Vercel
+## 🚢 Como Fazer Deploy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Opção 1: Vercel (Recomendado)
+1.  Crie uma conta na [Vercel](https://vercel.com).
+2.  Importe este repositório do GitHub.
+3.  Nas configurações do projeto, adicione as variáveis de ambiente (`FIREBASE_SERVICE_ACCOUNT`, etc.).
+4.  Clique em **Deploy**.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Opção 2: Netlify
+1.  Crie um novo site a partir do Git no Netlify.
+2.  Defina o comando de build como `npm run build`.
+3.  Defina o diretório de publicação como `.next` ou use o plugin `@netlify/plugin-nextjs`.
+4.  Adicione as variáveis de ambiente no painel do Netlify.
+
+## 📝 Estrutura de Pastas
+
+- `src/app`: Páginas e Rotas (App Router).
+- `src/components`: Componentes reutilizáveis (UI, Sections).
+- `src/lib`: Configurações de serviços (Firebase, Resend).
+- `public/assets`: Imagens e ícones estáticos.
+
+## 🔒 Segurança
+
+- Nunca suba o arquivo `.env` ou suas chaves privadas para o GitHub.
+- O arquivo `.gitignore` já está configurado para proteger seus dados.
+
+---
+Desenvolvido por **SmithZada Stack** e **Antigravity AI**.

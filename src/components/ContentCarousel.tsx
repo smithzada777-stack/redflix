@@ -1,8 +1,5 @@
 'use client';
 
-// 🔒 ARQUIVO BLOQUEADO - SENHA PARA EDIÇÃO: 123 🔒
-// ESTE ARQUIVO NÃO DEVE SER ALTERADO SEM AUTORIZAÇÃO EXPLÍCITA E A SENHA.
-
 import Image from 'next/image';
 import { useRef, useState, useEffect } from 'react';
 
@@ -93,4 +90,3 @@ export default function ContentCarousel({ title, items, delay = 0 }: CarouselPro
         </section>
     );
 }
-

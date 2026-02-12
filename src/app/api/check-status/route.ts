@@ -1,89 +1,84 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
-import { adminDb } from '@/lib/firebaseAdmin';
-import { sendEmail } from '@/lib/email';
+import { db } from '@/lib/firebase-admin';
+import { Resend } from 'resend';
 
-const PUSHINPAY_TOKEN = (process.env.PUSHINPAY_TOKEN || process.env.PUSHINPAY_API_KEY || '').replace(/['"]/g, '').trim();
+// Initialize Resend
+const resend = new Resend(process.env.RESEND_API_KEY || 're_test_key');
+
+const PUSHINPAY_API_STATUS = 'https://api.pushinpay.com.br/api/transaction';
 
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
-        const transactionId = searchParams.get('id');
+        const txIdRaw = searchParams.get('id');
 
-        if (!transactionId) {
-            return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+        if (!txIdRaw) {
+            return NextResponse.json({ error: 'Missing transaction ID' }, { status: 400 });
         }
 
-        const tid = transactionId.toLowerCase();
+        // Normalize ID (Rule of Gold #1)
+        const txId = txIdRaw.toLowerCase();
 
-        // 1. CONSULTA DIRETA NA API DA PUSHINPAY
-        try {
-            const response = await axios.get(`https://api.pushinpay.com.br/api/transactions/${tid}`, {
-                headers: {
-                    'Authorization': `Bearer ${PUSHINPAY_TOKEN}`,
-                    'Accept': 'application/json'
-                },
-                timeout: 10000
-            });
+        // CHECK FIRESTORE ONLY (To avoid the 404 errors mentioned in manual)
+        // Automatic flow: Webhook updates DB -> Client notices via this poll
+        const paymentRef = db.collection('payments').doc(txId);
+        const paymentSnap = await paymentRef.get();
 
-            const data = response.data;
-            const remoteStatus = (data.status || data.transaction_status || '').toString().toLowerCase();
-            const positiveStatuses = ['paid', 'approved', 'confirmed', 'concluido', 'sucesso'];
-            const isPaid = positiveStatuses.includes(remoteStatus);
+        if (paymentSnap.exists) {
+            const data = paymentSnap.data();
+            console.log(`Checking DB for ${txId}:`, data?.status);
 
-            // 2. LÓGICA AUTO-PROCESSÁVEL (SE NÃO TEM WEBHOOK, O CHECK-STATUS FAZ O TRABALHO)
-            if (isPaid && adminDb) {
-                const leadsRef = adminDb.collection('leads');
-                const snapshot = await leadsRef.where('transactionId', '==', tid).get();
-
-                if (!snapshot.empty) {
-                    for (const doc of snapshot.docs) {
-                        const leadData = doc.data();
-
-                        // Processa apenas se ainda não estiver aprovado
-                        if (leadData.status !== 'approved') {
-                            console.log(`[CHECK-STATUS] Detectado pagamento para Lead ${doc.id}. Aprovando e enviando e-mail...`);
-
-                            // Atualiza no banco (Dashboard)
-                            await doc.ref.update({
-                                status: 'approved',
-                                paidAt: new Date().toISOString()
-                            });
-
-                            // Dispara o E-mail de Aprovação
-                            if (leadData.email) {
-                                try {
-                                    await sendEmail({
-                                        email: leadData.email,
-                                        plan: leadData.plan || 'Plano RedFlix',
-                                        price: leadData.price || '0,00',
-                                        status: 'approved'
-                                    });
-                                    console.log(`[CHECK-STATUS] E-mail de aprovação enviado.`);
-                                } catch (emailErr) {
-                                    console.error("[CHECK-STATUS] Falha ao enviar e-mail:", emailErr);
-                                }
-                            }
-                        }
-                    }
-                }
+            if (data?.status === 'approved' || data?.status === 'paid' || data?.status === 'completed') {
+                return NextResponse.json({ paid: true, status: data.status });
             }
-
-            return NextResponse.json({
-                status: remoteStatus,
-                paid: isPaid
-            });
-
-        } catch (apiError: any) {
-            console.warn(`[CHECK STATUS] API instável para ID ${tid}: ${apiError.message}`);
-            return NextResponse.json({
-                status: 'pending',
-                paid: false
-            });
+            return NextResponse.json({ paid: false, status: data?.status || 'pending' });
         }
+
+        // Fallback to 'sales' collection
+        const saleRef = db.collection('sales').doc(txId);
+        const saleSnap = await saleRef.get();
+        if (saleSnap.exists) {
+            const data = saleSnap.data();
+            if (data?.status === 'approved' || data?.status === 'paid' || data?.status === 'completed') {
+                return NextResponse.json({ paid: true, status: data.status });
+            }
+        }
+
+        return NextResponse.json({ paid: false, status: 'pending' });
 
     } catch (error: any) {
-        console.error('[CHECK STATUS] Erro Interno:', error.message);
-        return NextResponse.json({ status: 'pending', paid: false }, { status: 200 });
+        console.error('Check status error:', error.message);
+        return NextResponse.json({ paid: false, error: error.message });
     }
+}
+
+async function sendAccessEmail(email: string, whatsapp: string) {
+    if (!process.env.RESEND_API_KEY) {
+        console.warn('RESEND_API_KEY not set. Email not sent.');
+        return;
+    }
+
+    await resend.emails.send({
+        from: 'RedFlix <onboarding@resend.dev>', // Update with verified domain later
+        to: [email],
+        subject: '🚀 ACESSO LIBERADO - RedFlix VIP',
+        html: `
+            <div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 20px; text-align: center;">
+                <h1 style="color: #E50914;">Seu Acesso RedFlix VIP Chegou!</h1>
+                <p>Obrigado por assinar. Aqui estão suas credenciais:</p>
+                <div style="background: #222; padding: 15px; border-radius: 8px; margin: 20px 0; display: inline-block; text-align: left;">
+                    <p><strong>Login:</strong> ${formatUsername(email)}</p>
+                    <p><strong>Senha:</strong> redflix2026</p>
+                </div>
+                <p>Baixe nosso aplicativo agora:</p>
+                <a href="https://redflixoficial.site/download" style="background-color: #E50914; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">BAIXAR APP</a>
+                <p style="margin-top: 20px; font-size: 12px; color: #666;">Dúvidas? <a href="https://wa.me/5571991644164" style="color: #E50914;">Fale com o Suporte</a></p>
+            </div>
+        `
+    });
+}
+
+function formatUsername(email: string) {
+    return email.split('@')[0] + Math.floor(Math.random() * 100);
 }

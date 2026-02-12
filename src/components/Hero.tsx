@@ -1,8 +1,5 @@
 'use client';
 
-// 🔒 ARQUIVO BLOQUEADO - SENHA PARA EDIÇÃO: 123 🔒
-// ESTE ARQUIVO NÃO DEVE SER ALTERADO SEM AUTORIZAÇÃO EXPLÍCITA E A SENHA.
-
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -85,4 +82,4 @@ const Hero = () => {
     );
 };
 
-export default Hero
+export default Hero;

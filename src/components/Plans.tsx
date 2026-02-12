@@ -1,8 +1,5 @@
 'use client';
 
-// 🔒 ARQUIVO BLOQUEADO - SENHA PARA EDIÇÃO: 123 🔒
-// ESTE ARQUIVO NÃO DEVE SER ALTERADO SEM AUTORIZAÇÃO EXPLÍCITA E A SENHA.
-
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Shield, Zap, Tv, Film, Download, Headphones, Users, ChevronRight } from 'lucide-react';
@@ -19,7 +16,7 @@ const bonuses = [
 
 const plans = [
     {
-        id: 1,
+        id: 'mensal',
         period: '1 Mês',
         price: '29,90',
         oldPrice: '39,90',
@@ -28,7 +25,7 @@ const plans = [
         users: 57
     },
     {
-        id: 2,
+        id: 'trimestral',
         period: '3 Meses',
         price: '79,90',
         oldPrice: '89,70',
@@ -37,7 +34,7 @@ const plans = [
         users: 1345
     },
     {
-        id: 3,
+        id: 'anual',
         period: '6 Meses',
         price: '149,90',
         oldPrice: '179,40',
@@ -50,8 +47,8 @@ const plans = [
 export default function Plans() {
     const router = useRouter();
 
-    const goToCheckout = (id: number, period: string, price: string) => {
-        router.push(`/checkout?id=${id}&plan=${encodeURIComponent(period)}&price=${price}`);
+    const goToCheckout = (id: string, period: string, price: string) => {
+        router.push(`/checkout?plan=${id}`);
     };
 
     return (

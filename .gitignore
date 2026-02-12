@@ -40,15 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# netlify
-.netlify
-
 # firebase
-firebase-debug.log
-firestore-debug.log
-ui-debug.log
-.firebase/
-
-# arquivos de teste/debug
-debug-*.js
-test-*.js
+*.json

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Shield, Lock, CreditCard, Instagram, MessageCircle } from 'lucide-react';
+import { Instagram, MessageCircle } from 'lucide-react';
 
 export default function Footer() {
     return (
@@ -16,7 +16,7 @@ export default function Footer() {
                     <Link href="/" className="transition-transform duration-300 hover:scale-105">
                         <div className="relative p-2 bg-black/20 rounded-lg">
                             <img
-                                src="/images/brand/logo.png"
+                                src="https://i.imgur.com/6H5gxcw.png"
                                 alt="RedFlix Logo"
                                 className="h-8 w-auto brightness-0 invert"
                             />

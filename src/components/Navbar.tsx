@@ -1,8 +1,5 @@
 'use client';
 
-// 🔒 ARQUIVO BLOQUEADO - SENHA PARA EDIÇÃO: 123 🔒
-// ESTE ARQUIVO NÃO DEVE SER ALTERADO SEM AUTORIZAÇÃO EXPLÍCITA E A SENHA.
-
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -18,7 +15,7 @@ export default function Navbar() {
                             fill
                             className="object-contain object-center md:object-left"
                             priority
-                            sizes="176px"
+                            sizes="(max-width: 768px) 160px, 224px"
                         />
                     </div>
                 </Link>

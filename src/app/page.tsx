@@ -7,9 +7,9 @@ import ContentCarousel from '@/components/ContentCarousel';
 import Testimonials from '@/components/Testimonials';
 import Plans from '@/components/Plans';
 import FAQ from '@/components/FAQ';
-
 import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import BackToTop from '@/components/BackToTop';
 
 const sportsItems = [
   { id: 1, name: 'Brasileirão', img: 'https://i.imgur.com/KzbghZn.png' },
@@ -74,6 +74,7 @@ export default function Home() {
       <Footer />
 
       <WhatsAppButton />
+      <BackToTop />
     </main>
   );
 }

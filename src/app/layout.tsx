@@ -1,27 +1,34 @@
-import type { Metadata } from 'next';
-import { Outfit, Inter, Black_Ops_One } from 'next/font/google';
-import './globals.css';
+import type { Metadata } from "next";
+import { Outfit } from "next/font/google"; // Correct font as requested
+import "./globals.css";
+import { clsx } from "clsx";
 
-const outfit = Outfit({ subsets: ['latin'] });
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const blackOps = Black_Ops_One({ subsets: ['latin'], weight: '400', variable: '--font-black-ops' });
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  weight: ["300", "400", "500", "600", "700", "800"], // Explicit weights
+});
 
 export const metadata: Metadata = {
-  title: 'RedFlix - O Melhor do Streaming',
-  description: 'Filmes, Séries e TV Ao Vivo com qualidade e economia.',
-  icons: {
-    icon: 'https://i.imgur.com/mq59DAj.png',
-  }
+  title: "RedFlix Ultra Pro - Liberdade para Assistir Tudo",
+  description: "A melhor plataforma de IPTV do Brasil. Sem travamentos, qualidade 4K e suporte 24h.",
+  keywords: ["iptv", "filmes", "séries", "tv ao vivo", "4k", "futebol"],
+  openGraph: {
+    title: "RedFlix Ultra Pro",
+    description: "Liberdade para Assistir Tudo. Sem Travamentos.",
+    type: "website",
+    locale: "pt_BR",
+  },
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="pt-BR">
-      <body className={`${outfit.className} ${inter.variable} ${blackOps.variable} antialiased selection:bg-primary/30 selection:text-white`}>
+    <html lang="pt-BR" className="scroll-smooth">
+      <body className={clsx(outfit.variable, "antialiased bg-[var(--color-rf-bg)] text-white font-sans min-h-screen")}>
         {children}
       </body>
     </html>
